@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { SpeechToText } from 'watson-speech';
 import { io } from 'socket.io-client';
+import { connect } from 'react-redux';
+import { addTranscript } from '../redux/trascriptRecuder';
 
-const userMedia = async () => {
+const initSTT = async (addTranscript) => {
   /* On Windows and Chrome OS the entire system audio can be captured, 
      but on Linux and Mac only the audio of a tab can be captured. */
     Promise.all([
@@ -21,15 +23,15 @@ const userMedia = async () => {
         mAudio: new MediaStream(micMedia.getAudioTracks())
       };
 
-      listenSTT(mediaStreams)
-        .then(() => recordMedia(mediaStreams));
+      listenSTT(mediaStreams, addTranscript)
+        //.then(() => recordMedia(mediaStreams));
       
     })
     .catch(error => console.error(error));
 
 };
 
-const listenSTT = (mediaStreams) => {
+const listenSTT = (mediaStreams, addTranscript) => {
   return fetch('http://localhost:5000/api/stt/token/')
     .then(res => res.json())
     .then(({ accessToken, url }) => {
@@ -56,6 +58,7 @@ const listenSTT = (mediaStreams) => {
             if (result.final) {
               const transcript = {...result.alternatives[0], type: type}
               console.log(transcript)
+              addTranscript(transcript);
             }
           })
 
@@ -88,18 +91,19 @@ const recordMedia = (mediaStreams) => {
     recorder.start(1000);
   }
 }
-  
 
-function Transcript () {
-  useEffect(() => {
-    userMedia();;
-  }, []);
-
-
-  return (
-    <>
-    </>
-  );
+const mapStateToProps = state => {
+  return { transcripts: state }
 }
 
-export default Transcript;
+const mapDispatchToProps = dispatch => {
+  return { addTranscript: transcript => dispatch(addTranscript(transcript)) }
+}
+
+function Transcript ({ addTranscript }) {
+  useEffect(() => initSTT(addTranscript), []);
+
+  return <></>;
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Transcript);
