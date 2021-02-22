@@ -1,5 +1,5 @@
 {
     "port": 5000,
-    "sttApiKey": "5KaMK7Fk28ful8tzgRpohM_9E9CpgUhJEdj4ac-laMX0",
-    "sttUrl": "https://api.kr-seo.speech-to-text.watson.cloud.ibm.com/instances/c7ad5be0-5edf-4f45-91ee-1c2e453f4108"
+    "sttApiKey": "sttApiKey",
+    "sttUrl": "sttUrl"
 }
