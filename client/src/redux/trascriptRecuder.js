@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import config from '../config';
 
 const transcriptReducer = createSlice({
     name: 'transcriptReducer',
@@ -7,8 +8,16 @@ const transcriptReducer = createSlice({
         addTranscript: (state, action) => {
             state.push(action.payload)
         },
+        updateTranscript: (state, action) => {
+            const { start, end, keywords } = action.payload;
+
+            for (let i = start; i < end; i++) {
+                state[i]['isAnalyzed'] = true;
+                state[i]['keywords'] = keywords
+            }
+        },
     }
 })
 
-export const { addTranscript } = transcriptReducer.actions;
+export const { addTranscript, updateTranscript } = transcriptReducer.actions;
 export default transcriptReducer;

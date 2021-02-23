@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import ChatBubble from './ChatBubbule';
 
 const mapStateToProps = (state) => {
     return {
@@ -6,12 +7,10 @@ const mapStateToProps = (state) => {
     }
 }
 
-function ChatView({ transcripts }) {
-    console.log(transcripts)
-
+function ChatView ({ transcripts }) {
     return (
-        <ul>
-            
+        <ul className="chat-container">
+            {transcripts.map((transcript, idx) => <ChatBubble {...transcript} key={idx}></ChatBubble>)}
         </ul>
     );
 }

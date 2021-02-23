@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { SpeechToText } from 'watson-speech';
 import { io } from 'socket.io-client';
 import { connect } from 'react-redux';
-import { addTranscript } from '../redux/trascriptRecuder';
+import config from '../config';
+import { addTranscript, updateTranscript } from '../redux/trascriptRecuder';
 
-const initSTT = async (addTranscript) => {
-  /* On Windows and Chrome OS the entire system audio can be captured, 
-     but on Linux and Mac only the audio of a tab can be captured. */
+const initSTT = (props) => {
+   /* On Windows and Chrome OS the entire system audio can be captured, 
+      but on Linux and Mac only the audio of a tab can be captured. */
     Promise.all([
       navigator.mediaDevices.getUserMedia({ video: false, audio: true}),
       navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
@@ -23,18 +24,20 @@ const initSTT = async (addTranscript) => {
         mAudio: new MediaStream(micMedia.getAudioTracks())
       };
 
-      listenSTT(mediaStreams, addTranscript)
+      listenSTT(mediaStreams, props)
         //.then(() => recordMedia(mediaStreams));
       
     })
     .catch(error => console.error(error));
+}
 
-};
-
-const listenSTT = (mediaStreams, addTranscript) => {
-  return fetch('http://localhost:5000/api/stt/token/')
+const listenSTT = (mediaStreams, props) => {
+  return fetch(`${config.HOST}/api/stt/token/`)
     .then(res => res.json())
     .then(({ accessToken, url }) => {
+      const { addTranscript, updateTranscript } = props;
+      const transcripts = [];
+
       for (const [type, stream] of Object.entries(mediaStreams)) {
         if (type !== 'video') { 
           //refer to the below repo
@@ -46,7 +49,9 @@ const listenSTT = (mediaStreams, addTranscript) => {
             model: 'ko-KR_BroadbandModel', //ko-KR_BroadbandModel, ko-KR_NarrowbandModel
             readableObjectMode: true,
             objectMode: true,
-            inactivityTimeout: -1
+            inactivityTimeout: 3600,
+            speechDetectorSensitivity: 1.0,
+            backgroundAudioSuppression: 0.5
           });
 
           sttStream.recognizeStream.on('open', () => {
@@ -56,9 +61,14 @@ const listenSTT = (mediaStreams, addTranscript) => {
           sttStream.on('data', data => {
             const result = data.results[0];
             if (result.final) {
-              const transcript = {...result.alternatives[0], type: type}
-              console.log(transcript)
+              const transcript = {...result.alternatives[0], type: type, isAnalyzed: false}
+              transcripts.push({...result.alternatives[0]});
+
+              //add transcxripts
               addTranscript(transcript);
+              
+              //update every 5 (default pool size) transcripts
+              upateTranscriptByKeywords(transcripts, updateTranscript)
             }
           })
 
@@ -72,7 +82,7 @@ const listenSTT = (mediaStreams, addTranscript) => {
 }
 
 const recordMedia = (mediaStreams) => {
-  const socket = io('http://localhost:5000/');
+  const socket = io(`${config.HOST}`);
 
   socket.on('connect', () => {
     console.info('socket connection established ')
@@ -92,16 +102,40 @@ const recordMedia = (mediaStreams) => {
   }
 }
 
+const upateTranscriptByKeywords = (transcripts, updateTranscript) => {
+  const currentSize = transcripts.length;
+  if (currentSize && currentSize % config.TRANSCRIPT_POOL === 0) {
+    const start = (currentSize / config.TRANSCRIPT_POOL) - 1;
+    const targetTranscripts = transcripts.slice(start, config.TRANSCRIPT_POOL);
+
+    const params = new URLSearchParams({transcripts: JSON.stringify(targetTranscripts)});
+
+    fetch(`${config.HOST}/api/transcript/keywords?${params}`)
+      .then(res => res.json())
+      .then(({ keywords }) => {
+        updateTranscript({start: start, end: currentSize, keywords: keywords});
+      });
+  }
+}
+
 const mapStateToProps = state => {
-  return { transcripts: state }
+  return { transcripts: state.transcripts }
 }
 
 const mapDispatchToProps = dispatch => {
-  return { addTranscript: transcript => dispatch(addTranscript(transcript)) }
+  return { 
+    addTranscript: transcript => dispatch(addTranscript(transcript)),
+    updateTranscript: currentSize => dispatch(updateTranscript(currentSize))
+  }
 }
 
-function Transcript ({ addTranscript }) {
-  useEffect(() => initSTT(addTranscript), []);
+
+function Transcript (props) {
+  useEffect(() =>{
+    (async function () {
+      initSTT(props);
+    })();
+  },[]);
 
   return <></>;
 }
