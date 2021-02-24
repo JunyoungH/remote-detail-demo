@@ -33,10 +33,19 @@ function api(app) {
 
     app.get('/api/transcript/wordcloud', (req, res) => {
         //sample response
-        const wordcloud = [
+        const words = [
             '림프', '남성호르몬', '뇌척수염', '대동맥', '독소', '디옥시리보스', '저혈당', '적혈구',
             '흉통', '불안증', '고혈압', '두근거림', '포도당', '글루카곤', '당뇨', '항히스타민제', '해열제', '헤르니아', '레티노산', '리보플라빈'
         ];
+
+        res.json({
+            words: words.map(word => {
+                    return {
+                        text: word,
+                        value: Math.floor(Math.random() * 90) + 10
+                    }
+            })
+        });
     });
 }
 

@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo&display=swap');
+
 #root {
-    max-width: 600px;
+    max-width: 320px;
     margin: 0 auto;
-    background: #6b6b6b;
-    padding: 15px 15px;
+    background: #797979;
+    padding: 5px 5px;
     height: 90vh;
     display: flex;
     flex-direction: column;
@@ -15,14 +17,23 @@
     overflow-y: scroll;
     height: 500px;
     background-color: white;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     margin-top: unset;
     flex: 3;
 }
 
-.chat-container li {
+.chat-container .chat-bubble {
     list-style: none;
     margin: 10px;
+    position: relative;
+    display: flex;
+}
+
+.chat-container .chat-bubble.bubble-left {
+    align-self: flex-start;
+}
+
+.chat-container .chat-bubble-text {
     max-width: 270px;
     font-size: 13px;
     padding: 10px;
@@ -30,14 +41,52 @@
     color: #2b2b2b;
 }
 
-.chat-container .bubble-left {
+.chat-container .chat-bubble.bubble-left .chat-bubble-text {
     background-color: #ffff3396;
-    align-self: flex-start;
+    margin-left: 4px;
 }
 
-.chat-container .bubble-right {
-    background-color: #ceffd0;
+.chat-container .chat-bubble.bubble-right {
     align-self: flex-end;
+    display: flex;
+    flex-direction: row-reverse;
+    position: relative;
+}
+
+.chat-container .chat-bubble.bubble-right .chat-bubble-text {
+    background-color: #ceffd0;
+    margin-right: 4px;
+}
+
+.chat-container .chat-bubble-icon {
+    width: 25px;
+    padding-top: 4px;
+}
+
+.chat-container .chat-bubble-icon img {
+    width: 100%
+}
+
+.chat-container .chat-analysis-icon {
+    top: -9px;
+    width: 19px;
+    position: absolute;
+}
+
+.chat-container .chat-bubble.bubble-left .chat-analysis-icon {
+    left: 23px;
+}
+
+.chat-container .chat-bubble.bubble-right .chat-analysis-icon {
+    right: 23px;
+}
+
+.chat-container .chat-analysis-icon img {
+    width: 100%;
+}
+
+.chat-container .chat-analyzed {
+    display: none;
 }
 
 .chat-container .bubble-keyword {
@@ -47,8 +96,13 @@
 
 .keyword-input-container {
     background: white;
-    padding: 10px;
-    flex: 1;
+    padding: 6px 5px 0px 5px;
+    display: flex;
+}
+
+.keyword-input-container .keyword-chips {
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .keyword-input-container button {
@@ -56,4 +110,44 @@
     border: none;
     cursor: pointer;
     outline: none;
+}
+
+.keyword-input-container .pubmed-button {
+    color: white;
+    background-color: #ff2929;
+    transition: background-color 0.2s linear;
+    padding: 4px;
+    border-radius: 2px;
+}
+
+.keyword-input-container .MuiInputBase-root {
+    align-items: flex-start;
+}
+
+.keyword-input-container .MuiInputBase-input {
+    font-size: 13px;
+    padding: 4px 0 7px;
+}
+
+.keyword-input-container .pubmed-button:hover {
+    background-color: #f34949;
+}
+
+.keyword-input-container .MuiChip-root {
+    background-color: #4f4fff;
+    color: white;
+    margin: 0 2px 2px 0px;
+}
+.keyword-input-container .MuiChip-clickable:hover {
+    background-color: #30309e;
+}
+
+.keyword-input-container .MuiChip-deleteIcon {
+    color: white;
+}
+
+.word-cloud-container {
+    height: 150px;
+    background-color: white;
+    margin-top: 5px;
 }

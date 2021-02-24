@@ -9,9 +9,9 @@ const mapStateToProps = (state) => {
 
 function ChatView ({ transcripts }) {
     return (
-        <ul className="chat-container">
+        <div className="chat-container">
             {transcripts.map((transcript, idx) => <ChatBubble {...transcript} key={idx}></ChatBubble>)}
-        </ul>
+        </div>
     );
 }
 

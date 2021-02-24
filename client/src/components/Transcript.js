@@ -3,7 +3,15 @@ import { SpeechToText } from 'watson-speech';
 import { io } from 'socket.io-client';
 import { connect } from 'react-redux';
 import config from '../config';
-import { addTranscript, updateTranscript } from '../redux/trascriptRecuder';
+
+// Services
+import { getWatsonToken } from '../services/sttService';
+import { getKeywords, getWordCloud } from '../services/transcriptService';
+
+// Actions
+import { addTranscript, updateTranscript } from '../redux/transcriptReducer';
+import { updateWordCloud } from '../redux/wordCloudReducer';
+
 
 const initSTT = (props) => {
    /* On Windows and Chrome OS the entire system audio can be captured, 
@@ -32,10 +40,9 @@ const initSTT = (props) => {
 }
 
 const listenSTT = (mediaStreams, props) => {
-  return fetch(`${config.HOST}/api/stt/token/`)
-    .then(res => res.json())
+  return getWatsonToken()
     .then(({ accessToken, url }) => {
-      const { addTranscript, updateTranscript } = props;
+      const { addTranscript, updateTranscript, updateWordCloud } = props;
       const transcripts = [];
 
       for (const [type, stream] of Object.entries(mediaStreams)) {
@@ -68,7 +75,8 @@ const listenSTT = (mediaStreams, props) => {
               addTranscript(transcript);
               
               //update every 5 (default pool size) transcripts
-              upateTranscriptByKeywords(transcripts, updateTranscript)
+              updateTranscriptByKeywords(transcripts, updateTranscript, updateWordCloud);
+
             }
           })
 
@@ -82,7 +90,7 @@ const listenSTT = (mediaStreams, props) => {
 }
 
 const recordMedia = (mediaStreams) => {
-  const socket = io(`${config.HOST}`);
+  const socket = io(`${config.SERVER_BASE_URL}`);
 
   socket.on('connect', () => {
     console.info('socket connection established ')
@@ -102,7 +110,7 @@ const recordMedia = (mediaStreams) => {
   }
 }
 
-const upateTranscriptByKeywords = (transcripts, updateTranscript) => {
+const updateTranscriptByKeywords = (transcripts, updateTranscript, updateWordCloud) => {
   const currentSize = transcripts.length;
   if (currentSize && currentSize % config.TRANSCRIPT_POOL === 0) {
     const start = (currentSize / config.TRANSCRIPT_POOL) - 1;
@@ -110,11 +118,13 @@ const upateTranscriptByKeywords = (transcripts, updateTranscript) => {
 
     const params = new URLSearchParams({transcripts: JSON.stringify(targetTranscripts)});
 
-    fetch(`${config.HOST}/api/transcript/keywords?${params}`)
-      .then(res => res.json())
-      .then(({ keywords }) => {
-        updateTranscript({start: start, end: currentSize, keywords: keywords});
-      });
+    getKeywords(params).then(({ keywords }) => {
+      updateTranscript({start: start, end: currentSize, keywords: keywords});
+    });
+
+    getWordCloud(params).then(({ words }) => {
+      updateWordCloud(words);
+    });
   }
 }
 
@@ -125,7 +135,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return { 
     addTranscript: transcript => dispatch(addTranscript(transcript)),
-    updateTranscript: currentSize => dispatch(updateTranscript(currentSize))
+    updateTranscript: currentSize => dispatch(updateTranscript(currentSize)),
+    updateWordCloud: words => dispatch(updateWordCloud(words))
   }
 }
 

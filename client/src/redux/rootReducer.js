@@ -1,9 +1,12 @@
-import trascriptRecuder from './trascriptRecuder';
+import transcriptReducer from './transcriptReducer';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import keywordReducer from './keywordReducer';
+import wordCloudReducer from './wordCloudReducer';
 
 const rootReducer = combineReducers({
-    transcripts: trascriptRecuder.reducer,
-    keywords: keywordReducer.reducer
+    transcripts: transcriptReducer.reducer,
+    keywords: keywordReducer.reducer,
+    words: wordCloudReducer.reducer
 })
+
 export default configureStore({ reducer:  rootReducer});

@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import config from '../config';
 
 const transcriptReducer = createSlice({
     name: 'transcriptReducer',

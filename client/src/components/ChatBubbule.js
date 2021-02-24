@@ -1,13 +1,16 @@
 import { connect } from 'react-redux';
 import regexifyString from 'regexify-string';
 import { addKeyword } from '../redux/keywordReducer';
+import watsonImg from '../images/watson.png';
+import mrImg from '../images/mr.png';
+import drImg from '../images/dr.png';
 
 
 const handleAddKeyword = (keyword, addKeyword) => {
     addKeyword(keyword);
 }
 
-const updateButtle = (props) => {
+const updateBubble = (props) => {
     const { transcript, keywords, isAnalyzed, addKeyword } = props;
 
     if(isAnalyzed) {
@@ -37,10 +40,25 @@ const mapDispatchToProps = dispatch => {
 }
 
 function ChatBubble (props) {
+    const source = props.type === 'mAudio' ? 
+        { class: 'bubble-left', img: mrImg } : 
+        { class: 'bubble-right', img: drImg };
+
+    const analysis = props.isAnalyzed ? 'chat-analyzed': '';
+
     return (
-        <li className={props.type === 'mAudio' ? 'bubble-left' : 'bubble-right'}>
-            {updateButtle(props)}
-        </li>
+        <div className={`chat-bubble ${source.class}`}>  
+            <span className="chat-bubble-icon">
+                <img src={source.img}></img>
+            </span>
+            <div className="chat-bubble-text">
+                <span className={`chat-analysis-icon ${analysis}`}>
+                    <img src={watsonImg}></img>
+                </span>
+                {updateBubble(props)}
+            </div>
+        </div>
+
     );
 }
 
