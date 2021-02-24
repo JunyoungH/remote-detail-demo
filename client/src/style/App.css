@@ -20,11 +20,12 @@
     margin-bottom: 5px;
     margin-top: unset;
     flex: 3;
+    padding: 10px 0;
 }
 
 .chat-container .chat-bubble {
     list-style: none;
-    margin: 10px;
+    margin: 0px 10px 7px 10px;
     position: relative;
     display: flex;
 }
@@ -120,13 +121,17 @@
     border-radius: 2px;
 }
 
+.keyword-input-container.MuiFormControl-root div {
+    min-height: 32px !important;
+}
+
 .keyword-input-container .MuiInputBase-root {
     align-items: flex-start;
 }
 
 .keyword-input-container .MuiInputBase-input {
     font-size: 13px;
-    padding: 4px 0 7px;
+    padding: 0 0 8px;
 }
 
 .keyword-input-container .pubmed-button:hover {
@@ -150,4 +155,9 @@
     height: 150px;
     background-color: white;
     margin-top: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #656565;
 }
+

@@ -25,10 +25,17 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
+const styles = {
+    standard: {
+        minHeight: '24px'
+    }
+}
+
 function KeywordSearch ({ classes, keywords, addKeyword, deleteKeyword }) {
     return (
         <div className="keyword-input-container">
             <ChipInput
+                classes={{standard: classes.standard}}
                 value={keywords}
                 onAdd={(keyword) => handleAddKeyword(keyword, addKeyword)}
                 onDelete={(keyword, index) => handleDeleteKeyword(index, deleteKeyword)}
@@ -54,4 +61,4 @@ function KeywordSearch ({ classes, keywords, addKeyword, deleteKeyword }) {
     )
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(KeywordSearch);
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(KeywordSearch));
