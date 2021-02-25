@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { SpeechToText } from 'watson-speech';
 import { io } from 'socket.io-client';
 import { connect } from 'react-redux';
@@ -12,20 +12,22 @@ import { getKeywords, getWordCloud } from '../services/transcriptService';
 import { addTranscript, updateTranscript } from '../redux/transcriptReducer';
 import { updateWordCloud } from '../redux/wordCloudReducer';
 
-
 const initSTT = (props) => {
-   /* On Windows and Chrome OS the entire system audio can be captured, 
-      but on Linux and Mac only the audio of a tab can be captured. */
+      //On Windows and Chrome OS the entire system audio can be captured, 
+      //but on Linux and Mac only the audio of a tab can be captured.
     Promise.all([
       navigator.mediaDevices.getUserMedia({ video: false, audio: true}),
       navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
     ])
     .then(streams => {
+      window.resizeTo(330, 520);
+
       const [micMedia, displayMedia] = streams;
       if(displayMedia.getAudioTracks().length < 1) {
         throw 'display audio share permission is denied';
       }
 
+      //media type of display (video, audio) and microphone input
       const mediaStreams = {
         video: new MediaStream(displayMedia.getVideoTracks()),
         sAudio: new MediaStream(displayMedia.getAudioTracks()),
@@ -33,7 +35,7 @@ const initSTT = (props) => {
       };
 
       listenSTT(mediaStreams, props)
-        //.then(() => recordMedia(mediaStreams));
+        .then(() => recordMedia(mediaStreams));
       
     })
     .catch(error => console.error(error));
@@ -47,7 +49,8 @@ const listenSTT = (mediaStreams, props) => {
 
       for (const [type, stream] of Object.entries(mediaStreams)) {
         if (type !== 'video') { 
-          //refer to the below repo
+
+          //refer to the below repo for options
           //https://github.com/watson-developer-cloud/speech-javascript-sdk/blob/master/docs/SPEECH-TO-TEXT.md          
           const sttStream = SpeechToText.recognizeMicrophone({
             accessToken: accessToken,
@@ -56,9 +59,7 @@ const listenSTT = (mediaStreams, props) => {
             model: 'ko-KR_BroadbandModel', //ko-KR_BroadbandModel, ko-KR_NarrowbandModel
             readableObjectMode: true,
             objectMode: true,
-            inactivityTimeout: 3600,
-            speechDetectorSensitivity: 1.0,
-            backgroundAudioSuppression: 0.5
+            inactivityTimeout: -1
           });
 
           sttStream.recognizeStream.on('open', () => {
@@ -112,6 +113,7 @@ const recordMedia = (mediaStreams) => {
 
 const updateTranscriptByKeywords = (transcripts, updateTranscript, updateWordCloud) => {
   const currentSize = transcripts.length;
+  
   if (currentSize && currentSize % config.TRANSCRIPT_POOL === 0) {
     const start = (currentSize / config.TRANSCRIPT_POOL) - 1;
     const targetTranscripts = transcripts.slice(start, config.TRANSCRIPT_POOL);

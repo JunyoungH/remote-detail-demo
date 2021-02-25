@@ -1,4 +1,4 @@
-function api(app) {
+function analysisApi(app) {
     const config = require('../config.json');
     const { IamTokenManager } = require('ibm-watson/auth');
 
@@ -49,4 +49,4 @@ function api(app) {
     });
 }
 
-module.exports = api;
+module.exports = analysisApi;

@@ -7,7 +7,7 @@ function socketIO (server) {
     });
 
     io.on('connection', socket => {
-        console.info(`socket-${socket.id}  connected`);
+        console.info(`WEBSOCKET CONNECTED - socket-${socket.id}`);
         const video = sAudio = mAudio = [];
         socket['buffers'] = {video, sAudio, mAudio};
     
@@ -24,6 +24,7 @@ function socketIO (server) {
             }
     
             socket.disconnect();
+            console.info(`WEBSOCKET DISCONNECTED - socket-${socket.id}`);
         })
     });
 }

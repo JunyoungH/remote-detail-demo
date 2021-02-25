@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import Dialog from '@material-ui/core/Dialog';
 import ChatBubble from './ChatBubbule';
 
 const mapStateToProps = (state) => {
@@ -9,9 +10,11 @@ const mapStateToProps = (state) => {
 
 function ChatView ({ transcripts }) {
     return (
-        <div className="chat-container">
-            {transcripts.map((transcript, idx) => <ChatBubble {...transcript} key={idx}></ChatBubble>)}
-        </div>
+        <>
+            <div className="chat-container">
+                {transcripts.map((transcript, idx) => <ChatBubble {...transcript} key={idx}></ChatBubble>)}
+            </div>
+        </>
     );
 }
 

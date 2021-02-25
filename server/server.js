@@ -8,7 +8,7 @@ const server = http.createServer(app);
 app.use(cors());
 
 require('./app/socketIO')(server);
-require('./app/api')(app);
+require('./app/analysisApi')(app);
 
 const PORT = config.port;
 server.listen(PORT, () => {
