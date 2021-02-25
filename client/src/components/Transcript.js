@@ -9,8 +9,12 @@ import { getWatsonToken } from '../services/sttService';
 import { getKeywords, getWordCloud } from '../services/transcriptService';
 
 // Actions
-import { addTranscript, updateTranscript } from '../redux/transcriptReducer';
+import { addTranscript, updateTranscript, hasTranscriptError } from '../redux/transcriptReducer';
 import { updateWordCloud } from '../redux/wordCloudReducer';
+
+const resizeWindow = () => {
+  window.resizeTo(330, 520);
+}
 
 const initSTT = (props) => {
       //On Windows and Chrome OS the entire system audio can be captured, 
@@ -20,8 +24,7 @@ const initSTT = (props) => {
       navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
     ])
     .then(streams => {
-      window.resizeTo(330, 520);
-
+      resizeWindow();
       const [micMedia, displayMedia] = streams;
       if(displayMedia.getAudioTracks().length < 1) {
         throw 'display audio share permission is denied';
@@ -35,21 +38,25 @@ const initSTT = (props) => {
       };
 
       listenSTT(mediaStreams, props)
-        .then(() => recordMedia(mediaStreams));
+        .then(() => recordMedia(mediaStreams))
       
     })
-    .catch(error => console.error(error));
+    .catch(error => {
+      resizeWindow();
+      props.hasTranscriptError({ isHasError: true });
+      console.error(error);
+    });
 }
 
 const listenSTT = (mediaStreams, props) => {
   return getWatsonToken()
     .then(({ accessToken, url }) => {
-      const { addTranscript, updateTranscript, updateWordCloud } = props;
+      const { addTranscript, updateTranscript, hasTranscriptError, updateWordCloud } = props;
       const transcripts = [];
 
       for (const [type, stream] of Object.entries(mediaStreams)) {
         if (type !== 'video') { 
-
+          
           //refer to the below repo for options
           //https://github.com/watson-developer-cloud/speech-javascript-sdk/blob/master/docs/SPEECH-TO-TEXT.md          
           const sttStream = SpeechToText.recognizeMicrophone({
@@ -66,6 +73,11 @@ const listenSTT = (mediaStreams, props) => {
             console.info(`stt service ${type} connected`)
           });
 
+          sttStream.recognizeStream.on('error', error => {
+            hasTranscriptError({ isHasError: true });
+            console.error(error);
+          })
+
           sttStream.on('data', data => {
             const result = data.results[0];
             if (result.final) {
@@ -73,7 +85,7 @@ const listenSTT = (mediaStreams, props) => {
               transcripts.push({...result.alternatives[0]});
 
               //add transcxripts
-              addTranscript(transcript);
+              addTranscript({ transcript });
               
               //update every 5 (default pool size) transcripts
               updateTranscriptByKeywords(transcripts, updateTranscript, updateWordCloud);
@@ -81,8 +93,9 @@ const listenSTT = (mediaStreams, props) => {
             }
           })
 
-          sttStream.on('error', err => {
-            throw console.error(err)
+          sttStream.on('error', error => {
+            hasTranscriptError({ isHasError: true });
+            console.error(error);
           });
         }
       }
@@ -131,13 +144,17 @@ const updateTranscriptByKeywords = (transcripts, updateTranscript, updateWordClo
 }
 
 const mapStateToProps = state => {
-  return { transcripts: state.transcripts }
+  return {
+    transcripts: state.transcript.results,
+    isHasError: state.transcript.isHasError
+  }
 }
 
 const mapDispatchToProps = dispatch => {
   return { 
     addTranscript: transcript => dispatch(addTranscript(transcript)),
     updateTranscript: currentSize => dispatch(updateTranscript(currentSize)),
+    hasTranscriptError: isHasError => dispatch(hasTranscriptError(isHasError)),
     updateWordCloud: words => dispatch(updateWordCloud(words))
   }
 }

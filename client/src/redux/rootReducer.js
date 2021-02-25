@@ -4,7 +4,7 @@ import keywordReducer from './keywordReducer';
 import wordCloudReducer from './wordCloudReducer';
 
 const rootReducer = combineReducers({
-    transcripts: transcriptReducer.reducer,
+    transcript: transcriptReducer.reducer,
     keywords: keywordReducer.reducer,
     words: wordCloudReducer.reducer
 })

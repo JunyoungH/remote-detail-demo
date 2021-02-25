@@ -25,6 +25,17 @@ body {
     padding: 10px 0;
 }
 
+.chat-container.has-error {
+    flex-direction: column;
+    justify-content: center;
+    color: #656565;;
+}
+
+.chat-container.has-error::after {
+    content: '문제가 발생 하였습니다.';
+    align-self: center;
+}
+
 .chat-container .chat-bubble {
     list-style: none;
     margin: 0px 10px 7px 10px;
